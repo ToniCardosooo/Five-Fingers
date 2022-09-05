@@ -8,3 +8,11 @@ GAME RULES
 - When the sticken player gets 5 fingers in a hand, they must close their hands (represented by having 0 fingers).
 - Players cannot attack closed hands (hands with 0 fingers).
 - A player wins when the opponent has both hands closed (both hands have 0 fingers).
+
+HOW TO RUN THE PROGRAM
+- Install any C++ compiler in case you haven't got one already.
+- Download all files into the same directory.
+- Open command prompt / terminal and compile (g++ example) the files with the command 'g++ .\main.cpp .\gameFuncs.cpp -o FiveFingers'
+- Type the command '.\FiveFingers', and the game will start on the command prompt / terminal.
+
+Enjoy!

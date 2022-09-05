@@ -15,6 +15,6 @@ HOW TO RUN THE PROGRAM
 - Open command prompt / terminal and compile (g++ example) the files with the command 'g++ .\main.cpp .\gameFuncs.cpp -o FiveFingers'
 - Type the command '.\FiveFingers', and the game will start on the command prompt / terminal.
 
-Enjoy!
+Enjoy!\n
 (a game mode 'Human vs AI' might be developed later with Minimax A/B algorithm)
 (a graphical version of this project might be done in Python in the future)

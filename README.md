@@ -16,3 +16,5 @@ HOW TO RUN THE PROGRAM
 - Type the command '.\FiveFingers', and the game will start on the command prompt / terminal.
 
 Enjoy!
+(a game mode 'Human vs AI' might be developed later with Minimax A/B algorithm)
+(a graphical version of this project might be done in Python in the future)

@@ -7,7 +7,7 @@ GAME RULES
   - With one hand, attack one of the opponent's hands, adding up your amount of fingers of your attacking hand to theirs on their stricken hand (the attacking player remains with the same amount of fingers in the attacking hand afterwards).
   - The player can distribute the total amout of fingers by both hands. For example, if a player has 4 fingers in one hand and 0 on the other, he can distribute them in 3-1 or 1-3, 2-2, or 0-4.
 * When the stricken player gets 5 fingers in a hand, they must close that hand (represented by having 0 fingers).
-- Players cannot attack closed hands (hands with 0 fingers).
+- Players cannot use or attack closed hands (hands with 0 fingers).
 - A player wins when the opponent has both hands closed (both hands have 0 fingers).
   
 HOW TO RUN THE PROGRAM

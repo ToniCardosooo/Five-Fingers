@@ -1,5 +1,5 @@
 # Five-Fingers
-  
+
 GAME RULES
 - This is a 2 player game.
 - Both players have one finger in each hand sticking out. The number of fingers drawn is represented on the command prompt during the game.
@@ -15,7 +15,6 @@ HOW TO RUN THE PROGRAM
 - Download all files into the same directory.
 - Open command prompt / terminal and compile (g++ example) the files with the command 'g++ .\main.cpp .\gameFuncs.cpp -o FiveFingers'
 - Type the command '.\FiveFingers', and the game will start on the command prompt / terminal.
+- Choose the game mode you want to play in! The 'Human vs AI' game mode uses a Minimax with A/B pruning to calculate the AI move.
   
-Enjoy!  
-(a game mode 'Human vs AI' might be developed later with Minimax A/B algorithm)  
-(a graphical version of this project might be done in Python in the future)
+Enjoy! 

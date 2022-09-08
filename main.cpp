@@ -4,25 +4,63 @@
 
 int main(){
 
-    // create players
-    PLAYER p0, p1;
+    // select game mode
+    int gamemode = chooseGameMode();
 
-    // randomly choose which player starts the game
-    srand(time(NULL));
-    int p_turn = rand()%2;
+    // create initial game state
+    GameState state;
 
-    // run the game
-    bool running = true;
-    while (running){
+    // if game mode is 'Human vs Human'
+    if (gamemode == 1){
 
-        playTurn(&p0, &p1, &p_turn);
-
-        if (gameEnded(p0, p1)) running = false;
-        else switchPlayerTurn(p_turn);
+        // randomly choose which player starts the game
+        srand(time(NULL));
+        state.turn = rand()%2;
 
     }
+    // if game mode is 'Human vs AI'
+    else state.turn = 0;
+    
+    // run the game
+    bool running = true;
 
-    std::cout << "\nPlayer " << p_turn + 1 << " won the game!\n";
+    // game mode is 'Human vs Human'
+    if (gamemode == 1){
+
+        while (running){
+        
+            displayGame(&state, gamemode);
+            playTurn(&state);
+
+            if (gameEnded(state.human, state.ai)) running = false;
+            else switchPlayerTurn(state.turn);
+
+        }
+        std::cout << "\nPlayer " << state.turn + 1 << " won the game!\n";
+    }
+
+    // if game mode is 'Human vs AI'
+    else{
+        
+        while (running){
+
+            displayGame(&state, gamemode);
+
+            // if it is the Human turn
+            if (state.turn == 0) playTurn(&state);
+
+            // if it is the AI turn
+            else executeMinimaxAB(&state);
+
+            if (gameEnded(state.human, state.ai)) running = false;
+            else switchPlayerTurn(state.turn);
+
+        }
+
+        if (state.turn == 0) cout << "\nHuman won the game!\n";
+        else cout << "\nAI won the game!\n";
+            
+    }
 
     return 0;
 }

@@ -10,16 +10,8 @@ int main(){
     // create initial game state
     GameState state;
 
-    // if game mode is 'Human vs Human'
-    if (gamemode == 1){
-
-        // randomly choose which player starts the game
-        srand(time(NULL));
-        state.turn = rand()%2;
-
-    }
-    // if game mode is 'Human vs AI'
-    else state.turn = 0;
+    // Player 1 or Human always start first
+    state.turn = 0;
     
     // run the game
     bool running = true;

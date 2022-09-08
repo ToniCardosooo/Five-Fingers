@@ -1,7 +1,5 @@
 #include "gameFuncs.hpp"
 
-using namespace std;
-
 
 // functions definition
 void switchPlayerTurn(int &p_turn){
@@ -9,6 +7,18 @@ void switchPlayerTurn(int &p_turn){
     p_turn = (p_turn + 1) % 2;
 
 }
+
+
+// ask which game mode to be played
+int chooseGameMode(){
+
+    int gamemode;
+    cout << "Which game mode do you want to play?\n\t(1) Human vs Human\n\t(2) Human vs AI (minimax a/b algorithm)\n";
+    cin >> gamemode;
+
+    return gamemode;
+}
+
 
 // ask if player wants to "attack" (1) or distribute the fingers (2)
 int chooseAction(){
@@ -101,16 +111,48 @@ void addFingers(int &player_hand, int &opponent_hand){
 }
 
 
-void playTurn(PLAYER *p0, PLAYER *p1, int *p_turn){
+// displays the number of fingers and turn
+void displayGame(GameState *state, int const &gamemode){
 
-    PLAYER *player = p0, *opponent = p1;
-    if (*p_turn == 1) player = p1, opponent = p0;
+    // if gamemode is 'Human vs Human'
+    if (gamemode == 1){
 
-    // show player fingers
-    cout << "\nPlayer " << *p_turn + 1 << " turn!" << "\n";
-    cout << "-----------------------------" << "\n";
-    cout << "Player 1 fingers: " << p0->left_hand << " (L)\t" << p0->right_hand << " (R)\n";
-    cout << "Player 2 fingers: " << p1->left_hand << " (L)\t" << p1->right_hand << " (R)\n";
+        cout << "\nPlayer " << state->turn + 1 << " turn!" << "\n";
+        cout << "-----------------------------" << "\n";
+        cout << "Player 1 fingers: " << state->human.left_hand << " (L)\t" << state->human.right_hand << " (R)\n";
+        cout << "Player 2 fingers: " << state->ai.left_hand << " (L)\t" << state->ai.right_hand << " (R)\n";
+
+    }
+    // if gamemode is 'Human vs AI' and it's the Human turn
+    else {
+        // Human turn
+        if (state->turn == 0){
+
+            cout << "\nHuman's turn!" << "\n";
+            cout << "-----------------------------" << "\n";
+            cout << "Human's fingers: " << state->human.left_hand << " (L)\t" << state->human.right_hand << " (R)\n";
+            cout << "AI's fingers:    " << state->ai.left_hand << " (L)\t" << state->ai.right_hand << " (R)\n";
+
+        }
+        // AI turn
+        else{
+            
+            cout << "\nAI's turn!" << "\n";
+            cout << "-----------------------------" << "\n";
+            cout << "Human's fingers: " << state->human.left_hand << " (L)\t" << state->human.right_hand << " (R)\n";
+            cout << "AI's fingers:    " << state->ai.left_hand << " (L)\t" << state->ai.right_hand << " (R)\n";
+
+        }
+
+    }
+
+}
+
+
+void playTurn(GameState *state){
+
+    PLAYER *player = &(state->human), *opponent = &(state->ai);
+    if (state->turn == 1) player = &(state->ai), opponent = &(state->human);
 
     // show possible actions: "attack" and "distribute fingers", and ask for input
     int action = chooseAction();

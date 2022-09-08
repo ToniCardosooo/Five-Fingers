@@ -34,6 +34,8 @@ int main(){
     // if game mode is 'Human vs AI'
     else{
         
+        vector<GameState *> state_collector;
+
         while (running){
 
             displayGame(&state, gamemode);
@@ -42,7 +44,7 @@ int main(){
             if (state.turn == 0) playTurn(&state);
 
             // if it is the AI turn
-            else executeMinimaxAB(&state);
+            else executeMinimaxAB(&state, state_collector);
 
             if (gameEnded(state.human, state.ai)) running = false;
             else switchPlayerTurn(state.turn);

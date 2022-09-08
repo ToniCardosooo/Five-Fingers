@@ -89,7 +89,7 @@ void playHuman(GameState *state, string &play){
 
 
 // creates the children states of the state given as argument
-vector<GameState *> createChildren(GameState *state){
+vector<GameState *> createChildren(GameState *state, vector<GameState *> &collector){
 
     vector<GameState *> children;
 
@@ -111,6 +111,10 @@ vector<GameState *> createChildren(GameState *state){
             // save the parent state in the child
             new_state->parent_state = state;
 
+            // save in collector
+            collector.push_back(new_state);
+
+            // save in children
             children.push_back(new_state);
 
         }
@@ -208,10 +212,10 @@ MinimaxResult heuristicFunc(GameState *state, int const &_depth){
 
 
 
-MinimaxResult minimaxAB(GameState *state, int depth, int const &max_depth, bool isMaximizingPlayer, double alpha, double beta){
+MinimaxResult minimaxAB(GameState *state, int depth, int const &max_depth, bool isMaximizingPlayer, double alpha, double beta, vector<GameState *> &collector){
 
     // create children of current state
-    vector<GameState *> children = createChildren(state);
+    vector<GameState *> children = createChildren(state, collector);
 
     // if state is final or is at the max depth
     if (children.size() == 0 || depth == max_depth){
@@ -226,7 +230,7 @@ MinimaxResult minimaxAB(GameState *state, int depth, int const &max_depth, bool 
         MinimaxResult bestPlay; bestPlay.evaluation = -1000;
         for (int i = 0; i < children.size(); i++){
 
-            MinimaxResult play = minimaxAB(children[i], depth+1, max_depth, false, alpha, beta);
+            MinimaxResult play = minimaxAB(children[i], depth+1, max_depth, false, alpha, beta, collector);
             
             if (play.evaluation > bestPlay.evaluation) copyMinimaxResult(&bestPlay, &play);
             alpha = max(alpha, bestPlay.evaluation);
@@ -245,7 +249,7 @@ MinimaxResult minimaxAB(GameState *state, int depth, int const &max_depth, bool 
         MinimaxResult bestPlay; bestPlay.evaluation = 1000;
         for (int i = 0; i < children.size(); i++){
 
-            MinimaxResult play = minimaxAB(children[i], depth+1, max_depth, true, alpha, beta);
+            MinimaxResult play = minimaxAB(children[i], depth+1, max_depth, true, alpha, beta, collector);
             
             if (play.evaluation < bestPlay.evaluation) copyMinimaxResult(&bestPlay, &play);
             beta = min(beta, bestPlay.evaluation);
@@ -277,14 +281,59 @@ GameState backPropagateIntoPlay(MinimaxResult *result){
 }
 
 
+// to check if two states are equal
+bool equalStates(GameState *s1, GameState *s2){
+
+    bool ai = (s1->ai.left_hand == s2->ai.left_hand) && (s1->ai.right_hand == s2->ai.right_hand);
+    bool human = (s1->human.left_hand == s2->human.left_hand) && (s1->human.right_hand == s2->human.right_hand);
+    bool turn = s1->turn == s2->turn;
+
+    if (ai && human && turn) return true;
+    else return false;
+
+}
+
+
+// to delete from memory all the children states that didnt make into the AI move
+void emptyCollector(vector<GameState *> &collector, GameState *ai_play){
+
+    bool ai_state_saved = false;
+
+    // iterate from the end
+    // if a state is equal to the state made by the AI, dont delete it, pop it out
+    for (int i = collector.size() - 1; i >= 0; i--){
+
+        if (equalStates(collector[i], ai_play) && !ai_state_saved) {
+            
+            collector.pop_back();
+            ai_state_saved = true;
+
+        }
+        else{
+            
+            delete collector[i];
+            collector.pop_back();
+
+        }
+
+    }
+
+}
+
+
 // function that will return the move to play by the AI, calculated in the minimaxAB function
-void executeMinimaxAB(GameState *state){
+void executeMinimaxAB(GameState *state, vector<GameState* > &state_collector){
 
-    int max_depth = 10;
+    int max_depth = 12;
 
-    MinimaxResult result = minimaxAB(state, 0, max_depth, true, -1000, 1000);
+    MinimaxResult result = minimaxAB(state, 0, max_depth, true, -1000, 1000, state_collector);
 
     GameState ai_play = backPropagateIntoPlay(&result);
+
+
+    cout << "COLLECTOR SIZE BEFORE = " << state_collector.size() << "\n";
+    emptyCollector(state_collector, &ai_play);
+    cout << "COLLECTOR SIZE AFTER = " << state_collector.size() << "\n";
 
     // alter the current state with the ai_play information
     state->human = ai_play.human;

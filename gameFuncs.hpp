@@ -1,4 +1,6 @@
 #include <iostream>
+#include <vector>
+
 using namespace std;
 
 // player struct
@@ -40,4 +42,4 @@ void playTurn(GameState *state);
 bool gameEnded(PLAYER &p0, PLAYER &p1);
 
 // AI functions
-void executeMinimaxAB(GameState *state);
+void executeMinimaxAB(GameState *state, vector<GameState* > &state_collector);

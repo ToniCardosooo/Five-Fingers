@@ -330,10 +330,7 @@ void executeMinimaxAB(GameState *state, vector<GameState* > &state_collector){
 
     GameState ai_play = backPropagateIntoPlay(&result);
 
-
-    cout << "COLLECTOR SIZE BEFORE = " << state_collector.size() << "\n";
     emptyCollector(state_collector, &ai_play);
-    cout << "COLLECTOR SIZE AFTER = " << state_collector.size() << "\n";
 
     // alter the current state with the ai_play information
     state->human = ai_play.human;

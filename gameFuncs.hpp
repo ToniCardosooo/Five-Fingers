@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include<tuple>
 
 using namespace std;
 
@@ -13,7 +14,6 @@ typedef struct{
 
 // struct that will hold information of the current state of the game in 'Human vs AI' gamemode
 struct game_state;
-
 typedef struct game_state{
 
     PLAYER human, ai;
@@ -34,12 +34,11 @@ typedef struct{
 } MinimaxResult;
 
 
-// functions declaration for main.cpp
+// functions declarations
 void switchPlayerTurn(int &p_turn);
 int chooseGameMode();
 void displayGame(GameState *state, int const &gamemode);
 void playTurn(GameState *state);
 bool gameEnded(PLAYER &p0, PLAYER &p1);
 
-// AI functions
 void executeMinimaxAB(GameState *state, vector<GameState* > &state_collector);

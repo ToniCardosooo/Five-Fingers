@@ -48,17 +48,6 @@ void playAI(GameState *state, string &play){
     else if (play == "RL") state->human.left_hand = (state->human.left_hand + state->ai.right_hand) % 5;
     else if (play == "RR") state->human.right_hand = (state->human.right_hand + state->ai.right_hand) % 5;
 
-    // in a distribute play, we will assume all distrubutions are equal
-    else if (play == "D"){
-
-        int sum = state->ai.left_hand + state->ai.right_hand;
-        state->ai.left_hand = sum / 2;
-        state->ai.right_hand = sum / 2;
-
-        if (sum % 2 != 0) state->ai.left_hand++;
-
-    }
-
     state->parent_play = play;
 
 }
@@ -72,20 +61,36 @@ void playHuman(GameState *state, string &play){
     else if (play == "RL") state->ai.left_hand = (state->ai.left_hand + state->human.right_hand) % 5;
     else if (play == "RR") state->ai.right_hand = (state->ai.right_hand + state->human.right_hand) % 5;
 
-    // in a distribute play, we will assume all distrubutions are equal
-    else if (play == "D"){
-
-        int sum = state->human.left_hand + state->human.right_hand;
-        state->human.left_hand = sum / 2;
-        state->human.right_hand = sum / 2;
-
-        if (sum % 2 != 0) state->human.left_hand++;
-
-    }
-
     state->parent_play = play;
 
 }
+
+
+// to check if two states are equal
+bool equalStates(GameState *s1, GameState *s2){
+
+    bool ai = (s1->ai.left_hand == s2->ai.left_hand) && (s1->ai.right_hand == s2->ai.right_hand);
+    bool human = (s1->human.left_hand == s2->human.left_hand) && (s1->human.right_hand == s2->human.right_hand);
+    bool turn = s1->turn == s2->turn;
+
+    if (ai && human && turn) return true;
+    else return false;
+
+}
+
+
+// checks if a state was already stored in the collector
+bool isInCollector(GameState *state, vector<GameState *> &collector){
+
+    for (int i = 0; i < collector.size(); i++){
+
+        if (equalStates(state, collector[i])) return true;
+
+    }
+
+    return false;
+}
+
 
 
 // creates the children states of the state given as argument
@@ -97,7 +102,7 @@ vector<GameState *> createChildren(GameState *state, vector<GameState *> &collec
     for (int i = 0; i < 5; i++){
         
         // create the child and add it to the vector if it is valid
-        if (playIsValid(state, moves[i])){
+        if (playIsValid(state, moves[i]) && i != 4){
             
             // reserve memory space for the child state
             GameState *new_state = new GameState;
@@ -111,11 +116,60 @@ vector<GameState *> createChildren(GameState *state, vector<GameState *> &collec
             // save the parent state in the child
             new_state->parent_state = state;
 
-            // save in collector
-            collector.push_back(new_state);
+            // save in collector and in children if it is not in the collector already
+            if (!isInCollector(new_state, collector)){
 
-            // save in children
-            children.push_back(new_state);
+                collector.push_back(new_state);
+                children.push_back(new_state);
+
+            }
+            // else, delete the pointer
+            else delete new_state;
+            
+        }
+        // distribution cases
+        else if (i == 4){
+
+            // human distribution
+            if (state->turn == 0 && state->human.left_hand + state->human.right_hand >= 2){
+
+                int fingers_sum = state->human.left_hand + state->human.right_hand;
+
+                for (int j = 1; j <= fingers_sum / 2; j++){
+                    
+                    // reserve memory space for the child state
+                    GameState *new_state = new GameState;
+                    *new_state = copyState(state);
+
+                    new_state->human.left_hand = j;
+                    new_state->human.right_hand = fingers_sum - j;
+
+                    // can't distribute the fingers into the distribution it had before
+                    if (equalStates(state, new_state)){
+
+                        delete new_state;
+                        continue;
+
+                    }
+
+                    switchPlayerTurn(new_state->turn);
+
+                    // save the parent state in the child
+                    new_state->parent_state = state;
+
+                    // save in collector and in children if it is not in the collector already
+                    if (!isInCollector(new_state, collector)){
+
+                        collector.push_back(new_state);
+                        children.push_back(new_state);
+
+                    }
+                    // else, delete the pointer
+                    else delete new_state;
+
+                }
+
+            }
 
         }
 
@@ -138,7 +192,7 @@ void copyMinimaxResult(MinimaxResult *first, MinimaxResult *second){
 
 // heuristic / evaluation function
 // returns a struct MinimaxResult with the evaluated state, its depth and evaluation
-MinimaxResult heuristicFunc(GameState *state, int const &_depth){
+MinimaxResult heuristicFunc(GameState *state, int const &_depth, double value_1 = 10, double value_2 = 2, double value_3 = 0.8, double value_4 = 0.5){
 
     MinimaxResult result;
 
@@ -151,7 +205,7 @@ MinimaxResult heuristicFunc(GameState *state, int const &_depth){
     double eval = 0;
 
     // if the game ended and victorius, eval increases by a large amount
-    if (gameEnded(_state.human, _state.ai)) eval += 10;
+    if (gameEnded(_state.human, _state.ai)) eval += value_1;
 
     // if the opponent has a closed hand, eval increases; if current play has a hand closed, eval descreases
     // if the next turn it's the opponent's turn, for every possible attack if there's a hand of the player that can be closed, eval decreases
@@ -160,7 +214,7 @@ MinimaxResult heuristicFunc(GameState *state, int const &_depth){
     // AI case
     if (_state.turn == 1){
 
-        if (_state.human.left_hand * _state.human.right_hand == 0) eval += 1;
+        if (_state.human.left_hand * _state.human.right_hand == 0) eval += value_2;
 
         string moves[4] = {"LL", "LR", "RL", "RR"};
         for (int i = 0; i < 4; i++){
@@ -171,7 +225,12 @@ MinimaxResult heuristicFunc(GameState *state, int const &_depth){
                 *new_state = copyState(&_state);
                 playAI(new_state, moves[i]);
 
-                if (new_state->human.left_hand * new_state->human.right_hand == 0) eval += 0.5;
+                if (new_state->human.left_hand * new_state->human.right_hand == 0) eval += value_3;
+
+                if ((new_state->human.left_hand + new_state->ai.left_hand) % 5 == 0) eval += -1*value_4;
+                if ((new_state->human.left_hand + new_state->ai.right_hand) % 5 == 0) eval += -1*value_4;
+                if ((new_state->human.right_hand + new_state->ai.left_hand) % 5 == 0) eval += -1*value_4;
+                if ((new_state->human.right_hand + new_state->ai.left_hand) % 5 == 0) eval += -1*value_4;
 
                 delete new_state;
 
@@ -195,6 +254,11 @@ MinimaxResult heuristicFunc(GameState *state, int const &_depth){
                 playHuman(new_state, moves[i]);
 
                 if (new_state->ai.left_hand * new_state->ai.right_hand == 0) eval += 0.5;
+
+                if ((new_state->human.left_hand + new_state->ai.left_hand) % 5 == 0) eval += -1*value_4;
+                if ((new_state->human.left_hand + new_state->ai.right_hand) % 5 == 0) eval += -1*value_4;
+                if ((new_state->human.right_hand + new_state->ai.left_hand) % 5 == 0) eval += -1*value_4;
+                if ((new_state->human.right_hand + new_state->ai.left_hand) % 5 == 0) eval += -1*value_4;
 
                 delete new_state;
 
@@ -281,19 +345,6 @@ GameState backPropagateIntoPlay(MinimaxResult *result){
 }
 
 
-// to check if two states are equal
-bool equalStates(GameState *s1, GameState *s2){
-
-    bool ai = (s1->ai.left_hand == s2->ai.left_hand) && (s1->ai.right_hand == s2->ai.right_hand);
-    bool human = (s1->human.left_hand == s2->human.left_hand) && (s1->human.right_hand == s2->human.right_hand);
-    bool turn = s1->turn == s2->turn;
-
-    if (ai && human && turn) return true;
-    else return false;
-
-}
-
-
 // to delete from memory all the children states that didnt make into the AI move
 void emptyCollector(vector<GameState *> &collector, GameState *ai_play){
 
@@ -338,10 +389,12 @@ void executeMinimaxAB(GameState *state, vector<GameState* > &state_collector){
     state->parent_state = ai_play.parent_state;
     state->parent_play = ai_play.parent_play;
 
+    
     if (state->parent_play == "LL") cout << "\nAI used Left hand against Human's Left Hand!\n";
     else if (state->parent_play == "LR") cout << "\nAI used Left hand against Human's Right Hand!\n";
     else if (state->parent_play == "RL") cout << "\nAI used Right hand against Human's Left Hand!\n";
     else if (state->parent_play == "RR") cout << "\nAI used Right hand against Human's Right Hand!\n";
     else if (state->parent_play == "D") cout << "\nAI distributed its fingers!\n";
+    
 
 }

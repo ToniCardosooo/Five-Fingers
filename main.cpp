@@ -1,5 +1,3 @@
-#include <time.h>
-
 #include "gameFuncs.hpp"
 
 int main(){
@@ -32,7 +30,7 @@ int main(){
     }
 
     // if game mode is 'Human vs AI'
-    else{
+    else if (gamemode == 2){
         
         vector<GameState *> state_collector;
 
